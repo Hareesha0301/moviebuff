@@ -49,12 +49,7 @@ class LoginView(View):
 
         user = authenticate(username= username, password=pass1) 
         if user is not None:
-            login(request,user)
-          
-            context={
-                "fname":user.first_name
-            }
-            
+            login(request,user)            
             return JsonResponse({"message": "login successfully"})
             
         else:
@@ -65,20 +60,6 @@ class LogoutView(View):
     def post(self, request):
         logout(request)
         return JsonResponse({"message": "Logged out successfully."})
-    
-'''class IsAuthorizedView(View):
-    def get(self, request):
-        authorized = request.user.is_authenticated
-        return JsonResponse({"authorized": authorized})
-
-class RestrictedView(View):
-    @staticmethod
-    def is_authorized(request):
-        return request.user.is_authenticated
-
-    def get(self, request):
-        authorized = self.is_authorized(request)
-        return JsonResponse({"authorized": authorized})'''
 
 class PopularMoviesView(View):
     @is_user_logged_in
@@ -107,6 +88,7 @@ class AllMoviesView(View):
         for movie in top_movies:
             
             temp = {
+                "id":movie.id,
                 "name": movie.moviename,
                 "rating": movie.avg_rating,
                 "releaseyear":movie.releaseyear
@@ -117,40 +99,51 @@ class AllMoviesView(View):
 
 class IndividualMovieView(View): 
     @is_user_logged_in
-    def get(self, request, slug):
-        moviepost = MovieDetails.objects.get(moviename=slug)
-        print(moviepost)
-        
+    def get(self, request, id):
+        moviepost = MovieDetails.objects.get(id=id)
+               
         context={ 
             "moviename": moviepost.moviename,
             "rating": moviepost.avg_rating,
-            "releaseyear":moviepost.releaseyear
-           
+            "releaseyear":moviepost.releaseyear          
         }
         
         return JsonResponse(context) 
+    
+class ReviewView(View):
+    @is_user_logged_in
+    def get(self, request, id):
+        moviepost = MovieDetails.objects.get(id=id)
+        print(moviepost)
+        print(type(moviepost))
+        reviews= Review.objects.filter(movie=moviepost)
+        reviewdetails=[]
+        
+        for review in reviews:
+            context={ 
+                "user_name": review.user_name,
+                "user_email": review.user_email,
+                "rating":review.rating,
+                "comment":review.comment,       
+            }
+            reviewdetails.append(context)
+        return JsonResponse(reviewdetails,safe=False) 
+    
+    @is_user_logged_in
+    def post(self, request,id ):  
+        review_form = json.loads(request.body)
+        
+        moviepost = MovieDetails.objects.get(id=id)
+        form = ReviewForm(review_form)
 
-    def post(self, request, slug): 
-        print("hello")
-        review_form = ReviewForm(request.POST)
-        moviepost = MovieDetails.objects.get(moviename=slug)
-        if review_form.is_valid(): 
+        if form.is_valid(): 
             print("Form is valid")
-            review = review_form.save(commit=False)
-            review.post= moviepost
+            review = form.save(commit=False)
+            review.movie= moviepost
             review.save()
-            return HttpResponseRedirect(reverse("movie_post_detail", args=[slug]))
+            return JsonResponse({"message": "Added review successfully"})
         else:
             print("form is not valid")
-        
-        
-        context={ 
-            "moviename": moviepost.moviename,
-            "moviepost_tags" : moviepost.tags.all() ,
-            "review_form"  : ReviewForm(),
-            "Reviews": moviepost.reviews.all().order_by("-id"),
-           
-        }
-        
-        return HttpResponse(context) 
+            return JsonResponse({"error": "Form is not valid"}, status=400)
+ 
 
