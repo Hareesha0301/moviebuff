@@ -121,8 +121,9 @@ class ReviewView(View):
         
         for review in reviews:
             context={ 
-                "user_name": review.user_name,
-                "user_email": review.user_email,
+
+                "username": review.user.username,
+                "email": review.user.email,
                 "rating":review.rating,
                 "comment":review.comment,       
             }
@@ -131,19 +132,28 @@ class ReviewView(View):
     
     @is_user_logged_in
     def post(self, request,id ):  
-        review_form = json.loads(request.body)
         
-        moviepost = MovieDetails.objects.get(id=id)
-        form = ReviewForm(review_form)
-
-        if form.is_valid(): 
-            print("Form is valid")
-            review = form.save(commit=False)
-            review.movie= moviepost
-            review.save()
-            return JsonResponse({"message": "Added review successfully"})
+        if Review.objects.filter(movie=id, user=request.user).count()==0:
+            
+            review_form = json.loads(request.body)
+            moviepost = MovieDetails.objects.get(id=id)
+            form = ReviewForm(review_form)
+            print(form)
+            if form.is_valid(): 
+                print("Form is valid")
+                review = form.save(commit=False)
+                review.movie= moviepost
+                review.user = request.user
+                review.save()
+                return JsonResponse({"message": "Added review successfully"})
+            else:
+                print("form is not valid")
+                print(form.errors)
+                print(request.user)
+                print(request.body)
+                print(review_form)
+                return JsonResponse({"error": "Form is not valid"}, status=400)
         else:
-            print("form is not valid")
-            return JsonResponse({"error": "Form is not valid"}, status=400)
+            return JsonResponse({"error": "User has already added review "}, status=400)
  
 

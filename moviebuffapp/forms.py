@@ -16,11 +16,10 @@ class ReviewForm(forms.ModelForm):
     # specify the name of model to use
     class Meta:
         model = Review
-        exclude=["movie"]
+        exclude=["movie","user"]
         labels={
-            "user_name":"Your Name",
-            "user_email": "Your Email", 
-            "rating" : "Rating" ,
-            "text": "Your Comment" 
+            "rating" : "rating" ,
+            "comment": "comment" 
         }
+       
 

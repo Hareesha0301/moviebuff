@@ -1,5 +1,7 @@
 from django.db import models
 from django.db.models import Avg
+from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 # Create your models here.
 
@@ -19,10 +21,10 @@ class MovieDetails(models.Model):
     def __str__(self):
         return self.moviename
 
-  
+CustomUser = get_user_model()
 class Review(models.Model):
-    user_name= models.CharField(max_length=120)
-    user_email= models.EmailField()
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     rating = models.IntegerField(default=1)   
     comment=models.TextField(max_length=400)
     movie =models.ForeignKey(MovieDetails, on_delete=models.CASCADE, null=True , related_name ="Reviews")
@@ -37,5 +39,5 @@ class Review(models.Model):
         
 
     def __str__(self):
-        return f"{self.rating} "
+        return f"{self.rating} {self.user.username} {self.movie.id} "
     
