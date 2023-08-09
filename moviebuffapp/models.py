@@ -10,6 +10,21 @@ class Tag(models.Model):
 
     def __str__(self):
         return f"{self.caption} "
+    
+class Artist(models.Model):
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    mini_bio =models.TextField(default="Promising Actor")
+    
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"   
+
+    def __str__(self):
+        return self.full_name()
+    
+    class Meta:
+        verbose_name = 'Artist'
+        verbose_name_plural = 'Artists'
 
 class MovieDetails(models.Model):
     moviename = models.CharField(max_length=255)
@@ -17,6 +32,7 @@ class MovieDetails(models.Model):
     languages=models.CharField(null=True,max_length=255)
     tags =models.ManyToManyField(Tag)
     avg_rating = models.FloatField(default=0)
+    artist = models.ManyToManyField(Artist)
 
     def __str__(self):
         return self.moviename
@@ -40,4 +56,6 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.rating} {self.user.username} {self.movie.id} "
+    
+    
     

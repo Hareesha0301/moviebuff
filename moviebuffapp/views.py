@@ -4,7 +4,7 @@ from django.views import View
 # Create your views here.
 from django.contrib.auth import authenticate , login , logout
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from .models import MovieDetails , Review
+from .models import MovieDetails , Review , Artist
 from .forms import ReviewForm ,UserSignupForm
 from .utils import is_user_logged_in
 from django.urls import reverse
@@ -66,12 +66,12 @@ class PopularMoviesView(View):
     def get(self, request, *args, **kwargs):  
         popular_movies = MovieDetails.objects.order_by('avg_rating')[:5] #avg score 
         response_content = []
-  
+        #print(Artist.objects.filter(id=1))
         for movie in popular_movies:
             
             temp = {
                 "name": movie.moviename,
-                "rating": movie.avg_rating
+                "rating": movie.avg_rating,         
             }
 
             response_content.append(temp)
@@ -86,7 +86,7 @@ class AllMoviesView(View):
         response_content = []
   
         for movie in top_movies:
-            
+           
             temp = {
                 "id":movie.id,
                 "name": movie.moviename,
@@ -101,15 +101,19 @@ class IndividualMovieView(View):
     @is_user_logged_in
     def get(self, request, id):
         moviepost = MovieDetails.objects.get(id=id)
-               
+        artists_data = [{ "id":artist.id,
+                        "first_name": artist.first_name,
+                        "last_name": artist.last_name
+            } for artist in moviepost.artist.all()]       
         context={ 
             "moviename": moviepost.moviename,
             "rating": moviepost.avg_rating,
-            "releaseyear":moviepost.releaseyear          
+            "releaseyear":moviepost.releaseyear,
+            "artist":artists_data  
         }
         
         return JsonResponse(context) 
-    
+# ReviewDetailView - GET one specific review, UPDATE one specific review, DELETE one specific review
 class ReviewView(View):
     @is_user_logged_in
     def get(self, request, id):
@@ -155,5 +159,31 @@ class ReviewView(View):
                 return JsonResponse({"error": "Form is not valid"}, status=400)
         else:
             return JsonResponse({"error": "User has already added review "}, status=400)
+        
+class ArtistView(View):
+    @is_user_logged_in
+    def get(self, request, id):
+        artist = Artist.objects.get(id=id)
+        print(artist)
+        print(type(artist))
+        movies= MovieDetails.objects.filter(artist=artist)
+        print(movies)
+        moviedetails=[]
+        reviewdetails=[{ "id":artist.id,
+                        "first_name": artist.first_name,
+                        "last_name": artist.last_name,
+                        "movies":moviedetails
+            }]
+        
+        for movie in movies:
+            context={ 
+                "id":movie.id,
+                "name": movie.moviename,
+                "rating": movie.avg_rating,
+                "releaseyear":movie.releaseyear,
+                
+            }
+            moviedetails.append(context)
+        return JsonResponse(reviewdetails,safe=False) 
  
 
