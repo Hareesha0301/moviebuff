@@ -14,6 +14,7 @@ COPY . /app
 COPY requirements.txt /app/
 
 # Install dependencies
+RUN pip install Django
 RUN pip install -r requirements.txt
 
 
