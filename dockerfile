@@ -1,17 +1,20 @@
-# Use an official Python runtime as the base image
-FROM python:3.8-slim
+# Use an official Python runtime as a parent image
+FROM python:3.9
 
-# Set the working directory in the container
+# Set environment variables
+ENV PYTHONUNBUFFERED 1
+
+# Set the working directory to /app
 WORKDIR /app
 
-# Copy the rest of the application source code into the container
+# Copy the current directory contents into the container at /app
 COPY . /app
 
-# Set any environment variables if required
-# ENV MY_ENV_VARIABLE value
+# Install any needed packages specified in requirements.txt
+RUN pip install -r requirements.txt
 
-# Expose any required ports (if your Python application listens on a specific port)
-# EXPOSE 8080
+# Make port 8000 available to the world outside this container
+EXPOSE 8000
 
-# Define the command to run your Python application (replace "app.py" with your main Python script)
-CMD ["python", "manage.py"]
+# Define the command to run your application
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
