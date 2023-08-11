@@ -14,7 +14,7 @@ COPY . /app
 COPY requirements.txt /app/
 
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 
 # Make port 8000 available to the world outside this container
