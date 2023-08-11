@@ -55,6 +55,20 @@ class LoginView(View):
         else:
             
             return JsonResponse({"error": "Invalid Credentials"}, status=401)
+        
+class LoginUserView(View):
+    def get(self, request, id, *args, **kwargs):  
+            userinfo= User.objects.get(id=id)
+            print(userinfo)
+
+            context={ 
+                "id":userinfo.id,
+                "firstname": userinfo.first_name,
+                "lastname":userinfo.last_name,
+                "email": userinfo.email,   
+            }
+        
+            return JsonResponse(context,safe=False) 
 
 class LogoutView(View):
     def post(self, request):
@@ -114,6 +128,53 @@ class IndividualMovieView(View):
         
         return JsonResponse(context) 
 # ReviewDetailView - GET one specific review, UPDATE one specific review, DELETE one specific review
+class ReviewDetailView(View):
+    @is_user_logged_in
+    def get(self, request, id):
+        review = Review.objects.get(id=id)
+        print(review)
+        print(type(review))
+             
+        context={ 
+                "id":review.id,
+                "username": review.user.username,
+                "email": review.user.email,
+                "rating":review.rating,
+                "comment":review.comment,       
+            }
+        
+        return JsonResponse(context,safe=False) 
+    
+    @is_user_logged_in
+    def put(self, request,id ):  
+        
+            review=Review.objects.get(id=id)
+            
+            review_form = json.loads(request.body)
+            new_rating = review_form.get('rating')
+            new_comment = review_form.get('comment')
+       
+            if new_rating is not None:
+                review.rating = new_rating
+            
+            if new_comment is not None:
+                review.comment = new_comment
+            
+            review.save()
+            
+            return JsonResponse({"message": "Review updated successfully"})
+    
+class DeleteReviewView(View):
+    def delete(self, request,id ):  
+        
+            review=Review.objects.get(id=id)
+            
+            #review_form= json.loads(request.body)
+            
+            review.delete()
+            
+            return JsonResponse({"message": "Review deleted successfully"})     
+
 class ReviewView(View):
     @is_user_logged_in
     def get(self, request, id):
@@ -125,7 +186,7 @@ class ReviewView(View):
         
         for review in reviews:
             context={ 
-
+                "id":review.id,
                 "username": review.user.username,
                 "email": review.user.email,
                 "rating":review.rating,
