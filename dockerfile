@@ -12,7 +12,7 @@ COPY . /app
 
 # Copy the requirements file into the container
 COPY requirements.txt /app/
-
+RUN pip install --upgrade pip 
 # Install dependencies
 RUN pip install Django
 RUN pip install -r requirements.txt
