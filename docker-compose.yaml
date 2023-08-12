@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: moviebuff_web
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
