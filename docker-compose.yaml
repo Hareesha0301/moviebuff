@@ -23,8 +23,11 @@ services:
     networks:
       - moviebuff
 
+
+
 volumes:
   postgres-data:
+
 
 networks:
   moviebuff:
