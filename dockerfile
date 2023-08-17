@@ -21,5 +21,9 @@ RUN pip install -r requirements.txt
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
 
+
+COPY docker-entrypoint.sh /app/
+RUN chmod +x /app/docker-entrypoint.sh
+
 # Define the command to run your application
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["/app/docker-entrypoint.sh"]
